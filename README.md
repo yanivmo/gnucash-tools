@@ -1,2 +1,3 @@
-# gnucash-tools
-GnuCash interoperability scripts
+# gnucash-viz
+GnuCash visualization tools
+
