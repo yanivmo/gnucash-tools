@@ -46,9 +46,10 @@ class Account:
 class GnuCash:
 
     def __init__(self, data_provider):
-        self._data_provider = data_provider  # type: gnucash_sqlite.GnuCashSqlite
+        self._data_provider = data_provider  # type: GnuCashSqlite
         self._load_accounts()
         self._balance_intervals = []
+        self._earliest_transaction, self._latest_transaction = self._data_provider.get_book_dates_range()
 
     def _load_accounts(self):
         acc_cursor = self._data_provider.get_accounts()
@@ -82,7 +83,7 @@ class GnuCash:
 
     def _append_balances(self, period_start, period_end):
         self._balance_intervals.append((period_start, period_end))
-        balances = self._data_provider.get_balances(period_start, period_end)
+        balances = self._data_provider.get_accounts_balance(period_start, period_end)
         balances_by_account = {acc_id: balance for acc_id, balance in balances}
 
         for root in self.root_accounts:
