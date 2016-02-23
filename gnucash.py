@@ -8,6 +8,7 @@ class Account:
         self.guid = guid
         self.parent_guid = parent_guid
         self.name = name
+        self.balance = 0
 
         self._children = []
 
@@ -33,6 +34,15 @@ class Account:
 
     def set_children(self, children):
         self._children = sorted(children)
+
+    def itertree(self):
+        """
+        Post-order accounts tree iteration
+        :return: Accounts generator
+        """
+        for child in self._children:
+            yield from child.itertree()
+        yield self
 
     def __repr__(self):
         return '<Account: {} "{}">'.format(self._guid, self._name)
@@ -71,3 +81,34 @@ class GnuCash:
 
     def get_accounts_by_name(self, name):
         return [acc for acc in self._accounts if acc.name == name]
+
+    def load_balances(self):
+        balances = self._data_provider.get_balances(datetime(2015, 1, 31), datetime(2017, 2, 1))
+        balances_by_account = {acc_id: balance for acc_id, balance in balances}
+
+        for root in self.root_accounts:
+            for acc in root.itertree():
+                acc.balance = balances_by_account.get(acc.guid, 0) + sum([child.balance for child in acc.children])
+
+
+def dump_account_hierarchy_with_indentation(account, indent=0):
+    result = '\n{}{} {} ('.format(' '*indent, account.name, account.balance/100)
+    for child_account in account.children:
+        result += dump_account_hierarchy_with_indentation(child_account, indent+3)
+    if account.has_children:
+        result += '\n' + ' '*indent
+    return result + ')'
+
+
+def dump_account_hierarchy_with_full_name(account, prefix='', separator=':'):
+    result = prefix + account.name + '\t' + str(account.balance/100) + '\n'
+    for child_account in account.children:
+        result += dump_account_hierarchy_with_full_name(child_account, prefix + account.name + separator)
+    return result
+
+
+if __name__ == "__main__":
+    gnucash = GnuCash(GnuCashSqlite('test.gnucash'))
+    gnucash.load_balances()
+    # print(dump_account_hierarchy_with_full_name(gnucash.get_accounts_by_name("Expenses")[0]))
+    print(dump_account_hierarchy_with_indentation(gnucash.get_accounts_by_name("Expenses")[0]))

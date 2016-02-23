@@ -23,7 +23,7 @@ class GnuCashSqlite:
 
     def get_balances(self, period_start: datetime.date, period_end: datetime.date):
         query = (
-            "SELECT a.guid, a.name, sum(s.value_num) "
+            "SELECT a.guid, sum(s.value_num) "
             "FROM "
             "    accounts AS a INNER JOIN "
             "    splits AS s ON a.guid = s.account_guid INNER JOIN "
