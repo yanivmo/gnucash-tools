@@ -41,6 +41,6 @@ class TestGnuCash(unittest.TestCase):
 
             mock_sql.get_balances.return_value = balances_cursor
             gnucash.load_balances()
-            post_order_balances = [0, 0, 2, 3, 6, 0, 6]
+            post_order_balances = [[0], [0], [2], [3], [6], [0], [6]]
             for acc in roots[0].itertree():
                 self.assertEqual(acc.balance, post_order_balances.pop(0), acc.name)

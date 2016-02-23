@@ -8,17 +8,9 @@ class Account:
         self.guid = guid
         self.parent_guid = parent_guid
         self.name = name
-        self.balance = 0
+        self.balance = []
 
         self._children = []
-
-    # @property
-    # def balance(self):
-    #     return self._balance
-    #
-    # @property
-    # def balance_including_children(self):
-    #     return self._balance + sum((c.balance_including_children for c in self._children))
 
     @property
     def is_root(self):
@@ -45,7 +37,7 @@ class Account:
         yield self
 
     def __repr__(self):
-        return '<Account: {} "{}">'.format(self._guid, self._name)
+        return '<Account: {} "{}">'.format(self.guid, self.name)
 
     def __lt__(self, other):
         return self.name < other.name
@@ -56,6 +48,7 @@ class GnuCash:
     def __init__(self, data_provider):
         self._data_provider = data_provider  # type: gnucash_sqlite.GnuCashSqlite
         self._load_accounts()
+        self._balance_intervals = []
 
     def _load_accounts(self):
         acc_cursor = self._data_provider.get_accounts()
@@ -83,16 +76,27 @@ class GnuCash:
         return [acc for acc in self._accounts if acc.name == name]
 
     def load_balances(self):
-        balances = self._data_provider.get_balances(datetime(2015, 1, 31), datetime(2017, 2, 1))
+        self._balance_intervals = []
+        self._reset_balances()
+        self._append_balances(datetime(2014, 1, 1), datetime(2017, 1, 1))
+
+    def _append_balances(self, period_start, period_end):
+        self._balance_intervals.append((period_start, period_end))
+        balances = self._data_provider.get_balances(period_start, period_end)
         balances_by_account = {acc_id: balance for acc_id, balance in balances}
 
         for root in self.root_accounts:
             for acc in root.itertree():
-                acc.balance = balances_by_account.get(acc.guid, 0) + sum([child.balance for child in acc.children])
+                children_balance = sum([child.balance[-1] for child in acc.children])
+                acc.balance.append(balances_by_account.get(acc.guid, 0) + children_balance)
+
+    def _reset_balances(self):
+        for acc in self._accounts:
+            acc.balance = []
 
 
 def dump_account_hierarchy_with_indentation(account, indent=0):
-    result = '\n{}{} {} ('.format(' '*indent, account.name, account.balance/100)
+    result = '\n{}{} {} ('.format(' '*indent, account.name, [x/100 for x in account.balance])
     for child_account in account.children:
         result += dump_account_hierarchy_with_indentation(child_account, indent+3)
     if account.has_children:
