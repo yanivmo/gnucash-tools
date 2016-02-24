@@ -49,7 +49,7 @@ class GnuCash:
         self._data_provider = data_provider  # type: GnuCashSqlite
         self._load_accounts()
         self._balance_intervals = []
-        self._earliest_transaction, self._latest_transaction = self._data_provider.get_book_dates_range()
+        # self._earliest_transaction, self._latest_transaction = self._data_provider.get_book_dates_range()
 
     def _load_accounts(self):
         acc_cursor = self._data_provider.get_accounts()
@@ -94,6 +94,21 @@ class GnuCash:
     def _reset_balances(self):
         for acc in self._accounts:
             acc.balance = []
+
+
+def make_intervals(start, interval, end):
+    assert start < end
+    assert start + interval > start
+
+    intervals = []
+    x = start
+    n = 1
+    while x < end:
+        intervals.append(x)
+        x = start + n*interval
+        n += 1
+    intervals.append(end)
+    return intervals
 
 
 def dump_account_hierarchy_with_indentation(account, indent=0):

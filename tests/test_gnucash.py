@@ -1,6 +1,9 @@
 import unittest
 from unittest.mock import patch
-from gnucash import GnuCash
+from gnucash import GnuCash, make_intervals
+
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 
 class TestGnuCash(unittest.TestCase):
@@ -44,3 +47,15 @@ class TestGnuCash(unittest.TestCase):
             post_order_balances = [[0], [0], [2], [3], [6], [0], [6]]
             for acc in roots[0].itertree():
                 self.assertEqual(acc.balance, post_order_balances.pop(0), acc.name)
+
+    def test_make_intervals(self):
+
+        with self.assertRaises(Exception):
+            x = make_intervals(datetime(2016, 2, 24), timedelta(seconds=0), datetime(2016, 2, 27))
+
+        x = make_intervals(datetime(2016, 2, 24), relativedelta(days=1), datetime(2016, 2, 26))
+        self.assertEqual(x, [datetime(2016, 2, 24), datetime(2016, 2, 25), datetime(2016, 2, 26)])
+
+        x = make_intervals(datetime(2016, 1, 31), relativedelta(months=1), datetime(2016, 4, 26))
+        self.assertEqual(x, [datetime(2016, 1, 31), datetime(2016, 2, 29),
+                             datetime(2016, 3, 31), datetime(2016, 4, 26)])
