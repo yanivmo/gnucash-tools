@@ -1,13 +1,10 @@
 import sqlite3
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple
 
 
 class GnuCashSqlite:
-
-    TIMESTAMP_FORMAT = '%Y%m%d%H%M%S'
-
     def __init__(self, filename):
         self._conn = sqlite3.connect(filename)
 
@@ -39,7 +36,7 @@ class GnuCashSqlite:
             "WHERE t.post_date >= ? AND t.post_date < ? "
             "GROUP BY a.guid;"
         )
-        query_params = (period_start.strftime(self.TIMESTAMP_FORMAT), period_end.strftime(self.TIMESTAMP_FORMAT))
+        query_params = (datetime2db(period_start), datetime2db(period_end))
         return self._conn.execute(query, query_params).fetchall()
 
     def get_book_dates_range(self) -> Tuple[datetime, datetime]:
@@ -52,5 +49,16 @@ class GnuCashSqlite:
             "FROM transactions AS t;"
         )
         result = self._conn.execute(query).fetchone()
-        return (datetime.strptime(result[0], self.TIMESTAMP_FORMAT),
-                datetime.strptime(result[1], self.TIMESTAMP_FORMAT))
+        return db2datetime(result[0]), db2datetime(result[1])
+
+
+TIMESTAMP_FORMAT = '%Y%m%d%H%M%S'
+ONE_DAY = timedelta(days=1)
+
+
+def datetime2db(dt: datetime) -> str:
+    return (dt - ONE_DAY).strftime(TIMESTAMP_FORMAT)
+
+
+def db2datetime(timestamp: str) -> datetime:
+    return datetime.strptime(timestamp, TIMESTAMP_FORMAT) + ONE_DAY
