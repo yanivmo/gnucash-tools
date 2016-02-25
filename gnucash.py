@@ -1,4 +1,6 @@
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from typing import List
 
 from gnucash_sqlite import GnuCashSqlite
 
@@ -76,10 +78,11 @@ class GnuCash:
     def get_accounts_by_name(self, name):
         return [acc for acc in self._accounts if acc.name == name]
 
-    def load_balances(self):
+    def load_balances(self, intervals: List[datetime]):
         self._balance_intervals = []
         self._reset_balances()
-        self._append_balances(datetime(2014, 1, 1), datetime(2017, 1, 1))
+        for interval in zip(intervals, intervals[1:]):
+            self._append_balances(*interval)
 
     def _append_balances(self, period_start, period_end):
         self._balance_intervals.append((period_start, period_end))
@@ -128,7 +131,7 @@ def dump_account_hierarchy_with_full_name(account, prefix='', separator=':'):
 
 
 if __name__ == "__main__":
-    gnucash = GnuCash(GnuCashSqlite('test.gnucash'))
-    gnucash.load_balances()
+    gnucash = GnuCash(GnuCashSqlite('test2.gnucash'))
+    gnucash.load_balances(make_intervals(datetime(2015, 1, 1), relativedelta(months=1), datetime(2016, 1, 1)))
     # print(dump_account_hierarchy_with_full_name(gnucash.get_accounts_by_name("Expenses")[0]))
     print(dump_account_hierarchy_with_indentation(gnucash.get_accounts_by_name("Expenses")[0]))
