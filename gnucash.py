@@ -1,3 +1,5 @@
+import json
+
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from typing import List
@@ -58,6 +60,12 @@ class Account:
             result += child_account.report_flat(prefix + self.name + separator, separator)
         return result
 
+    def report_structured(self):
+        return {
+            'name': self.name,
+            'balance': [x/100 for x in self.balance],
+            'children': [ch.report_structured() for ch in self.children]
+        }
 
 class GnuCash:
 
@@ -132,4 +140,5 @@ if __name__ == "__main__":
     gnucash = GnuCash(GnuCashSqlite('test2.gnucash'))
     gnucash.load_balances(make_intervals(datetime(2015, 1, 1), relativedelta(months=1), datetime(2016, 1, 1)))
     # print(dump_account_hierarchy_with_full_name(gnucash.get_accounts_by_name("Expenses")[0]))
-    print(gnucash.get_accounts_by_name("Expenses")[0].report_flat())
+    # print(gnucash.get_accounts_by_name("Expenses")[0].report_flat())
+    print(json.dumps(gnucash.get_accounts_by_name("Expenses")[0].report_structured()))
