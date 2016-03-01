@@ -44,6 +44,20 @@ class Account:
     def __lt__(self, other):
         return self.name < other.name
 
+    def report_indented(self, indent=0):
+        result = '\n{}{} {} ('.format(' '*indent, self.name, [x/100 for x in self.balance])
+        for child_account in self.children:
+            result += child_account.report_indented(indent+3)
+        if self.has_children:
+            result += '\n' + ' '*indent
+        return result + ')'
+
+    def report_flat(self, prefix='', separator=':'):
+        result = prefix + self.name + '\t' + str([x/100 for x in self.balance]) + '\n'
+        for child_account in self.children:
+            result += child_account.report_flat(prefix + self.name + separator, separator)
+        return result
+
 
 class GnuCash:
 
@@ -114,24 +128,8 @@ def make_intervals(start, interval, end):
     return intervals
 
 
-def dump_account_hierarchy_with_indentation(account, indent=0):
-    result = '\n{}{} {} ('.format(' '*indent, account.name, [x/100 for x in account.balance])
-    for child_account in account.children:
-        result += dump_account_hierarchy_with_indentation(child_account, indent+3)
-    if account.has_children:
-        result += '\n' + ' '*indent
-    return result + ')'
-
-
-def dump_account_hierarchy_with_full_name(account, prefix='', separator=':'):
-    result = prefix + account.name + '\t' + str(account.balance/100) + '\n'
-    for child_account in account.children:
-        result += dump_account_hierarchy_with_full_name(child_account, prefix + account.name + separator)
-    return result
-
-
 if __name__ == "__main__":
     gnucash = GnuCash(GnuCashSqlite('test2.gnucash'))
     gnucash.load_balances(make_intervals(datetime(2015, 1, 1), relativedelta(months=1), datetime(2016, 1, 1)))
     # print(dump_account_hierarchy_with_full_name(gnucash.get_accounts_by_name("Expenses")[0]))
-    print(dump_account_hierarchy_with_indentation(gnucash.get_accounts_by_name("Expenses")[0]))
+    print(gnucash.get_accounts_by_name("Expenses")[0].report_flat())
