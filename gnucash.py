@@ -60,12 +60,13 @@ class Account:
             result += child_account.report_flat(prefix + self.name + separator, separator)
         return result
 
-    def report_structured(self):
+    def get_structure(self):
         return {
             'name': self.name,
             'balance': [x/100 for x in self.balance],
-            'children': [ch.report_structured() for ch in self.children]
+            'children': [ch.get_structure() for ch in self.children]
         }
+
 
 class GnuCash:
 
@@ -139,6 +140,8 @@ def make_intervals(start, interval, end):
 if __name__ == "__main__":
     gnucash = GnuCash(GnuCashSqlite('test2.gnucash'))
     gnucash.load_balances(make_intervals(datetime(2015, 1, 1), relativedelta(months=1), datetime(2016, 1, 1)))
+    expenses = gnucash.get_accounts_by_name("Expenses")[0]
+
     # print(dump_account_hierarchy_with_full_name(gnucash.get_accounts_by_name("Expenses")[0]))
     # print(gnucash.get_accounts_by_name("Expenses")[0].report_flat())
-    print(json.dumps(gnucash.get_accounts_by_name("Expenses")[0].report_structured()))
+    print(json.dumps(expenses.get_structure()))
