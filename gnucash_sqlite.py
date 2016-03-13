@@ -51,6 +51,18 @@ class GnuCashSqlite:
         result = self._conn.execute(query).fetchone()
         return db2datetime(result[0]), db2datetime(result[1])
 
+    def get_currencies(self) -> Tuple[str, str, str]:
+        """
+        Get the available currencies.
+        :return: A tuple (id, mnemonic, name)
+        """
+        query = (
+            "SELECT guid, mnemonic, fullname "
+            "FROM commodities "
+            "WHERE namespace = 'CURRENCY';"
+        )
+        return self._conn.execute(query).fetchall()
+
 
 TIMESTAMP_FORMAT = '%Y%m%d%H%M%S'
 ONE_DAY = timedelta(days=1)
