@@ -1,7 +1,6 @@
 import sqlite3
 
 from datetime import datetime, timedelta
-from typing import Tuple
 
 
 class GnuCashSqlite:
@@ -39,7 +38,7 @@ class GnuCashSqlite:
         query_params = (datetime2db(period_start), datetime2db(period_end))
         return self._conn.execute(query, query_params).fetchall()
 
-    def get_book_dates_range(self) -> Tuple[datetime, datetime]:
+    def get_book_dates_range(self):
         """
         Get the earliest and the latest date in the transaction date in the database.
         :return: A tuple (first_date, last_date)
@@ -51,7 +50,7 @@ class GnuCashSqlite:
         result = self._conn.execute(query).fetchone()
         return db2datetime(result[0]), db2datetime(result[1])
 
-    def get_currencies(self) -> Tuple[str, str, str]:
+    def get_currencies(self):
         """
         Get the available currencies.
         :return: A tuple (id, mnemonic, name)
@@ -63,14 +62,20 @@ class GnuCashSqlite:
         )
         return self._conn.execute(query).fetchall()
 
+    def reset_import_wizard(self):
+        query = (
+            "DELETE FROM slots "
+            "WHERE name LIKE 'import-map-bayes%';"
+        )
+        self._conn.execute(query)
 
 TIMESTAMP_FORMAT = '%Y%m%d%H%M%S'
 ONE_DAY = timedelta(days=1)
 
 
-def datetime2db(dt: datetime) -> str:
+def datetime2db(dt: datetime):
     return (dt - ONE_DAY).strftime(TIMESTAMP_FORMAT)
 
 
-def db2datetime(timestamp: str) -> datetime:
+def db2datetime(timestamp: str):
     return datetime.strptime(timestamp, TIMESTAMP_FORMAT) + ONE_DAY
