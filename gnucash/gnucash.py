@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from gnucash_sqlite import GnuCashSqlite
+from .gnucash_sqlite import GnuCashSqlite
 
 
 class Account:

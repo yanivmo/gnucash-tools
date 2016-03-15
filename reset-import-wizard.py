@@ -1,6 +1,6 @@
 import argparse
 
-from gnucash_sqlite import GnuCashSqlite
+from gnucash import GnuCashSqlite
 
 
 if __name__ == '__main__':

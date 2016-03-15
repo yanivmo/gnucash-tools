@@ -22,7 +22,7 @@ class TestGnuCash(unittest.TestCase):
             ('8', '1', 'F')       # |--F
         ]                         # root 2
 
-        with patch('gnucash_sqlite.GnuCashSqlite') as mock_sql:
+        with patch('gnucash.GnuCashSqlite') as mock_sql:
             mock_sql.get_accounts.return_value = accounts_cursor
 
             gnucash = GnuCash(mock_sql)
@@ -52,7 +52,7 @@ class TestGnuCash(unittest.TestCase):
             ('7', '1', 'F')       # |--F
         ]
 
-        with patch('gnucash_sqlite.GnuCashSqlite') as mock_sql:
+        with patch('gnucash.GnuCashSqlite') as mock_sql:
             mock_sql.get_accounts.return_value = accounts_cursor
 
             gnucash = GnuCash(mock_sql)
