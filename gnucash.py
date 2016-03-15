@@ -2,7 +2,6 @@ import json
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from typing import List
 
 from gnucash_sqlite import GnuCashSqlite
 
@@ -101,7 +100,7 @@ class GnuCash:
     def get_accounts_by_name(self, name):
         return [acc for acc in self._accounts if acc.name == name]
 
-    def load_balances(self, intervals: List[datetime]):
+    def load_balances(self, intervals):
         self._balance_intervals = []
         self._reset_balances()
         for interval in zip(intervals, intervals[1:]):
