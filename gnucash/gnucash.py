@@ -54,7 +54,7 @@ class Account:
         return result + ')'
 
     def report_flat(self, prefix='', separator=':'):
-        result = prefix + self.name + '\t' + str([x/100 for x in self.balance]) + '\n'
+        result = prefix + self.name + ',' + ','.join([str(x/100) for x in self.balance]) + '\n'
         for child_account in self.children:
             result += child_account.report_flat(prefix + self.name + separator, separator)
         return result
@@ -134,13 +134,3 @@ def make_intervals(start, interval, end):
         n += 1
     intervals.append(end)
     return intervals
-
-
-if __name__ == "__main__":
-    gnucash = GnuCash(GnuCashSqlite('test2.gnucash'))
-    gnucash.load_balances(make_intervals(datetime(2015, 1, 1), relativedelta(months=1), datetime(2016, 1, 1)))
-    expenses = gnucash.get_accounts_by_name("Expenses")[0]
-
-    # print(dump_account_hierarchy_with_full_name(gnucash.get_accounts_by_name("Expenses")[0]))
-    # print(gnucash.get_accounts_by_name("Expenses")[0].report_flat())
-    print(json.dumps(expenses.get_structure()))
